@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AccountService</name>
+    </assembly>
+    <members>
+        <member name="M:AccountService.TransactionController.GetTransaction(System.Guid)">
+            <summary>
+            Get a transaction by id
+            </summary>
+            <returns> Found transaction </returns>
+            <response code="200">Returns the found transaction</response>
+            <response code="404">If the transaction doesn't exist</response>
+        </member>
+        <member name="M:AccountService.TransactionController.GetAnExtract(System.Guid,System.DateTime)">
+            <summary>
+            Get a transaction by Account ID
+            </summary>
+            <returns> List of transaction </returns>
+            <response code="200">Returns the found transactions</response>
+            <response code="404">If the account wasn't found</response>
+        </member>
+        <member name="M:AccountService.TransactionController.CreateTransaction(AccountService.Requests.TransactionCreateRequest)">
+            <summary>
+            Creates a transaction
+            </summary>
+            <response code="200">Creates the transaction</response>
+            <response code="400">Whether the Description is empty or more than 5.000 characters
+            OR the Currency Code doesn't comply with ISO 4217 format
+            OR a User take invalid data
+            OR the account or the counterparty account has already been deleted</response>
+            <response code="402">Balance of Account or Counterparty Account is less than the sum of transaction</response>
+            <response code="403">Whether a User try to take someone else's money OR a User isn't the owner of it</response>
+            <response code="404">If the account or the counterparty account wasn't found</response> 
+        </member>
+        <member name="M:AccountService.WalletController.Get(System.Guid,System.Guid)">
+            <summary>
+            Get an Account By ID
+            </summary>
+            <returns> The List of transaction </returns>
+            <response code="200">Returns the found account</response>
+            <response code="404">If the account wasn't found</response>
+            <response code="403">If you aren't the owner</response>
+        </member>
+        <member name="M:AccountService.WalletController.GetAll(System.Guid)">
+            <summary>
+            Get an accounts of the owner
+            </summary>
+            <returns>Returns the accounts of the owner</returns>
+            <response code="200">Returns the accounts of the owner</response>
+        </member>
+        <member name="M:AccountService.WalletController.Create(AccountService.Requests.WalletCreateRequest)">
+            <summary>
+            Creates a wallet
+            </summary>
+            <returns> Returns an ID of the new wallet </returns>
+            <response code="201">Returns an ID of the new wallet</response>
+            <response code="400">Whether the Currency Code doesn't comply with ISO 4217 format OR a User take invalid data</response>
+            <response code="404">If the Owner hasn't been found</response>
+        </member>
+        <member name="M:AccountService.WalletController.Update(AccountService.Requests.WalletUpdateRequest)">
+            <summary>
+            Updates a wallet
+            </summary>
+            <response code="200">Updates the wallet</response>
+            <response code="404">If the wallet wasn't found</response>
+            <response code="403">If a User isn't the owner of it</response>
+            <response code="400">Whether a User try update the wallet which has already been used
+            OR the New Currency Code doesn't comply with ISO 4217 format
+            OR a User take invalid data</response>
+        </member>
+        <member name="M:AccountService.WalletController.PartiallyUpdate(AccountService.Requests.WalletPartiallyUpdateRequest)">
+            <summary>
+            Partially Updates an Account
+            </summary>
+            <returns> The List of transaction </returns>
+            <response code="200">Updates the wallet partially</response>
+            <response code="404">If the wallet wasn't found</response>
+            <response code="400">Whether the wallet's already been deleted
+            OR the wallet have a WalletType.Checking type and the NewInterestRate's been not null
+            OR the wallet have other type and the NewInterestRate's been null</response>
+        </member>
+        <member name="M:AccountService.WalletController.Delete(System.Guid)">
+            <summary>
+            Deletes Account
+            </summary>
+            <response code="200">The Account's been deleted</response>
+            <response code="404">If the account wasn't found</response>
+            <response code="403">If you aren't the owner</response>
+            <response code="400">If the account's already been deleted</response>
+        </member>
+    </members>
+</doc>
