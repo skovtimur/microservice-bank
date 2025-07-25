@@ -3,7 +3,6 @@ using AccountService.Commands.CreateWallet;
 using AccountService.Commands.DeleteWallet;
 using AccountService.Commands.PartiallyUpdateWallet;
 using AccountService.Commands.UpdateWallet;
-using AccountService.Data;
 using AccountService.Domain.Entities;
 using AccountService.Domain.ValueObjects;
 using AccountService.DTOs;
@@ -39,7 +38,7 @@ public class WalletController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [HttpGet("{id}/{ownerId}", Name = nameof(Get)), ValidationFilter]
+    [HttpGet("{id:guid}/{ownerId:guid}", Name = nameof(Get)), ValidationFilter]
     public async Task<IActionResult> Get([Required] Guid id, [Required] Guid ownerId)
     {
         WalletEntity? foundWallet;
@@ -66,7 +65,7 @@ public class WalletController(
     /// <returns>Returns the accounts of the owner</returns>
     /// <response code="200">Returns the accounts of the owner</response>
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [HttpGet("all/{ownerId}"), ValidationFilter]
+    [HttpGet("all/{ownerId:guid}"), ValidationFilter]
     public async Task<IActionResult> GetAll([Required] Guid ownerId)
     {
         var wallets = await mediator.Send(new GetAllWallestQuery(ownerId));
@@ -222,7 +221,7 @@ public class WalletController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HttpDelete("delete/{id}"), ValidationFilter]
+    [HttpDelete("delete/{id:guid}"), ValidationFilter]
     public async Task<IActionResult> Delete(Guid id)
     {
         try

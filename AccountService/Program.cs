@@ -21,7 +21,7 @@ builder.Services.AddSwaggerGen(options =>
         {
             Name = "Timur",
             Url = new Uri("https://t.me/skovtimur")
-        },
+        }
     });
     // https://learn.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-swashbuckle?view=aspnetcore-8.0&tabs=visual-studio
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -38,7 +38,7 @@ builder.Services.AddAutoMapper(cfg => { cfg.AddProfile<MainMapper>(); });
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});;
+});
 
 builder.Services.AddMediatR(cfg => { cfg.RegisterServicesFromAssembly(typeof(CreateWalletCommandHandler).Assembly); });
 

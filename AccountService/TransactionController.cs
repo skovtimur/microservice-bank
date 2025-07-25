@@ -12,7 +12,6 @@ using AccountService.Queries.GetTransaction;
 using AccountService.Requests;
 using AutoMapper;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AccountService;
@@ -35,7 +34,7 @@ public class TransactionController(
     /// <response code="404">If the transaction doesn't exist</response>
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HttpGet("{id}", Name = nameof(GetTransaction))]
+    [HttpGet("{id:guid}", Name = nameof(GetTransaction))]
     public async Task<IActionResult> GetTransaction(Guid id)
     {
         TransactionEntity? transaction = await mediator.Send(new GetTransactionQuery(id));
@@ -55,7 +54,7 @@ public class TransactionController(
     /// <response code="404">If the account wasn't found</response>
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HttpGet("all/{accountId}/{fromAtUtc}")]
+    [HttpGet("all/{accountId:guid}/{fromAtUtc:datetime}")]
     public async Task<IActionResult> GetAnExtract([Required] Guid accountId, [Required] DateTime fromAtUtc)
     {
         List<TransactionDto> transactions;
@@ -152,7 +151,7 @@ public class TransactionController(
             IsoCurrencyCode = request.IsoCurrencyCode,
             Description = request.Description,
         };
-        
+
         return await CreateTransaction(transactionCreateRequest);
     }
 }

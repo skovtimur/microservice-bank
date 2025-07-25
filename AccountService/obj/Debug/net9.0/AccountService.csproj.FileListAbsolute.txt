@@ -44,3 +44,4 @@
 /home/timur/Desktop/repositories/microservice-bank/AccountService/obj/Debug/net9.0/ref/AccountService.dll
 /home/timur/Desktop/repositories/microservice-bank/AccountService/bin/Debug/net9.0/AccountService.xml
 /home/timur/Desktop/repositories/microservice-bank/AccountService/obj/Debug/net9.0/AccountService.xml
+/home/timur/Desktop/repositories/microservice-bank/AccountService/obj/Debug/net9.0/AccountService.sourcelink.json
