@@ -13,4 +13,9 @@ public class DescriptionValueObject
             ? null
             : new DescriptionValueObject { Description = description };
     }
+
+    public override string ToString()
+    {
+        return Description;
+    }
 }

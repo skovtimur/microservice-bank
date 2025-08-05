@@ -14,4 +14,9 @@ public class CurrencyValueObject
             ? new CurrencyValueObject { Currency = isoCurrencyCode }
             : null;
     }
+
+    public override string ToString()
+    {
+        return Currency;
+    }
 }
