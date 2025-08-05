@@ -1,5 +1,7 @@
+using AccountService.Commands.CreateWallet;
 using AccountService.Domain;
 using AccountService.Domain.ValueObjects;
+using AccountService.DTOs;
 using AccountService.Validators;
 using MediatR;
 
@@ -17,8 +19,9 @@ public class TransactionCreateCommand : IRequest<Guid>
 
     public DescriptionValueObject Description { get; set; }
 
-    public static TransactionCreateCommand? Create(Guid ownerId, Guid accountId, decimal sum,
-        TransactionType transactionType, CurrencyValueObject currency, DescriptionValueObject description, Guid? counterpartyAccountId)
+    public static MbResult<TransactionCreateCommand> Create(Guid ownerId, Guid accountId, decimal sum,
+        TransactionType transactionType, CurrencyValueObject currency, DescriptionValueObject description,
+        Guid? counterpartyAccountId)
     {
         var newTransaction = new TransactionCreateCommand
         {
@@ -28,11 +31,15 @@ public class TransactionCreateCommand : IRequest<Guid>
             TransactionType = transactionType,
             Currency = currency,
             Description = description,
-            CounterpartyAccountId = counterpartyAccountId,
-        };
 
-        return TransactionCreateCommandValidator.IsValid(newTransaction)
-            ? newTransaction 
-            : null;
+            CounterpartyAccountId = counterpartyAccountId == null || counterpartyAccountId == Guid.Empty
+                ? null
+                : counterpartyAccountId,
+        };
+        var result = TransactionCreateCommandValidator.IsValid(newTransaction);
+
+        return result.IsSuccess
+            ? MbResult<TransactionCreateCommand>.Ok(newTransaction)
+            : MbResult<TransactionCreateCommand>.Fail(result.ErrorMessage);
     }
 }

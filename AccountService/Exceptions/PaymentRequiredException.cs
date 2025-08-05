@@ -1,9 +1,12 @@
+using AccountService.Abstractions.ExceptionInterfaces;
+using AccountService.DTOs;
+
 namespace AccountService.Exceptions;
 
-public class PaymentRequiredException : Exception
+public class PaymentRequiredException(string message) : Exception(message), IExceptionToMbResultMapper
 {
-    public PaymentRequiredException(string message) : base(message)
+    public MbResult<T> ToMbResult<T>()
     {
-        
+        return MbResult<T>.Fail($"Payment Required: {Message}");
     }
 }

@@ -1,6 +1,9 @@
+using AccountService.Abstractions.ExceptionInterfaces;
+using AccountService.DTOs;
+
 namespace AccountService.Exceptions;
 
-public class BadRequestExсeption : Exception
+public class BadRequestExсeption : Exception, IExceptionToMbResultMapper
 {
     public BadRequestExсeption(string text) : base(text)
     {
@@ -13,5 +16,10 @@ public class BadRequestExсeption : Exception
     public BadRequestExсeption(Type type, string propertyName, string toBeValidText) : base(
         $"{type}.{propertyName} was invalid. To be Valid it need: {toBeValidText}")
     {
+    }
+
+    public MbResult<T> ToMbResult<T>()
+    {
+        return MbResult<T>.Fail(Message);
     }
 }

@@ -1,8 +1,12 @@
+using AccountService.Abstractions.ExceptionInterfaces;
+using AccountService.DTOs;
+
 namespace AccountService.Exceptions;
 
-public class ForbiddenException : Exception
+public class ForbiddenException(string message) : Exception(message), IExceptionToMbResultMapper
 {
-    public ForbiddenException(string message) : base(message)
+    public MbResult<T> ToMbResult<T>()
     {
+        return MbResult<T>.Fail($"Access denied: {Message}");
     }
 }

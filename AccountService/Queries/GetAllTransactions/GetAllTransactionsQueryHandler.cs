@@ -17,6 +17,11 @@ public class GetAllTransactionsQueryHandler(IMapper mapper)
         if (indexOfWallet < 0)
             throw new NotFoundException(typeof(WalletEntity), request.AccountId);
 
+        var wallet = WalletsSingleton.Wallets[indexOfWallet];
+
+        if (wallet.IsOwner(request.OwnerId) == false)
+            throw new ForbiddenException("You can't see these transactions because you aren't owner");
+
         var transactionEntities = TransactionsSingleton.Transactions
             .Where(x => x.IsDeleted == false)
             .Where(x => x.AccountId == request.AccountId)

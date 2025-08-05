@@ -21,18 +21,16 @@ public class PartiallyUpdateWalletCommandHandler : IRequestHandler<PartiallyUpda
         if (wallet.IsDeleted)
             throw new BadRequestExсeption("The Wallet's deleted");
 
-        if ((wallet.Type == WalletType.Checking && request.NewInterestRate == null)
-            || (wallet.Type != WalletType.Checking && request.NewInterestRate != null))
-        {
-            wallet.InterestRate = request.NewInterestRate;
-            wallet.ClosedAtUtc = request.ClosedAtUtc;
-            wallet.UpdatedAtUtc = DateTime.UtcNow;
-            WalletsSingleton.Wallets[index] = wallet;
+        if (wallet.IsOwner(request.OwnerId) == false)
+            throw new ForbiddenException("You're not an owner");
 
-            return;
-        }
+        if (wallet.Type == WalletType.Checking)
+            throw new BadRequestExсeption(
+                $"Only Wallet with {WalletType.Deposit} or {WalletType.Credit} type can have an {nameof(WalletEntity.InterestRate)}");
 
-        throw new BadRequestExсeption(
-            $"Only Wallet with {WalletType.Deposit} or {WalletType.Credit} type can have an {nameof(WalletEntity.InterestRate)}");
+        wallet.InterestRate = request.NewInterestRate;
+        wallet.ClosedAtUtc = request.ClosedAtUtc;
+        wallet.UpdatedAtUtc = DateTime.UtcNow;
+        WalletsSingleton.Wallets[index] = wallet;
     }
 }

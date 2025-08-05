@@ -1,4 +1,4 @@
-using AccountService.Requests;
+using AccountService.Validators;
 
 namespace AccountService.Domain.ValueObjects;
 
@@ -8,7 +8,8 @@ public class DescriptionValueObject
 
     public static DescriptionValueObject? Create(string description)
     {
-        return string.IsNullOrEmpty(description) || description.Length > TransactionCreateRequest.MaxDescriptionLength
+        return string.IsNullOrEmpty(description) ||
+               description.Length > TransactionCreateCommandValidator.MaxDescriptionLength
             ? null
             : new DescriptionValueObject { Description = description };
     }

@@ -3,7 +3,8 @@ using MediatR;
 
 namespace AccountService.Queries.GetTransaction;
 
-public class GetTransactionQuery(Guid id) : IRequest<TransactionEntity?>
+public class GetTransactionQuery(Guid id, Guid ownerId) : IRequest<TransactionEntity?>
 {
     public Guid Id { get; set; } = id;
+    public Guid OwnerId { get; set; } = ownerId;
 }
