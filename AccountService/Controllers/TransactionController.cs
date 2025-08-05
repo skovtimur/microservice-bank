@@ -3,11 +3,9 @@ using System.Net;
 using AccountService.Abstractions.ServiceInterfaces;
 using AccountService.Commands.CreateTransaction;
 using AccountService.Domain;
-using AccountService.Domain.Entities;
 using AccountService.Domain.ValueObjects;
 using AccountService.DTOs;
 using AccountService.Exceptions;
-using AccountService.Extensions;
 using AccountService.Filters;
 using AccountService.Queries.GetAllTransactions;
 using AccountService.Queries.GetTransaction;
@@ -24,9 +22,12 @@ namespace AccountService.Controllers;
 public class TransactionController(
     IMapper mapper,
     IMediator mediator,
-    ILogger<TransactionController> logger,
     IClaimsService claimsService) : ControllerBase
 {
+    // ReSharper disable NullableWarningSuppressionIsUsed
+    //Чтобы не блокировали Оператор ! (null-forgiving operator), а точнее я использую MbResult где Result может быть null ТОЛЬКО ПРИ isSuccess = false,
+    //я же делаю проверку поэтому данный warning излишен
+    
     /// <summary>
     /// Get a transaction by id
     /// </summary>
@@ -46,7 +47,7 @@ public class TransactionController(
 
         try
         {
-            TransactionEntity? transaction = await mediator.Send(new GetTransactionQuery(id, userId));
+            var transaction = await mediator.Send(new GetTransactionQuery(id, userId));
 
             if (transaction == null)
                 return NotFound(MbResult<TransactionDto>.Fail("Transaction not found"));
@@ -81,7 +82,7 @@ public class TransactionController(
 
         try
         {
-            List<TransactionDto> transactions =
+            var transactions =
                 await mediator.Send(new GetAllTransactionsQuery(accountId, userId, fromAtUtc));
 
             var result = MbResult<List<TransactionDto>>.Ok(transactions);
@@ -145,10 +146,10 @@ public class TransactionController(
             if (result.IsSuccess == false)
                 return BadRequest(MbResult<Guid>.Fail(result.ErrorMessage));
 
-            Guid id = await mediator.Send(result.Result);
-            return CreatedAtAction(nameof(GetTransaction), new { id = id }, id);
+            var transactionId = await mediator.Send(result.Result!);
+            return CreatedAtAction(nameof(GetTransaction), new { id = transactionId }, transactionId);
         }
-        catch (BadRequestExсeption exception)
+        catch (BadRequestException exception)
         {
             return BadRequest(exception.ToMbResult<Guid>());
         }
@@ -158,7 +159,6 @@ public class TransactionController(
         }
         catch (ForbiddenException exception)
         {
-            logger.LogTrace($"Forbidden: {exception.Message}");
             return StatusCode(StatusCodes.Status403Forbidden, exception.ToMbResult<Guid>());
         }
         catch (PaymentRequiredException exception)
@@ -197,9 +197,8 @@ public class TransactionController(
             Sum = request.Sum,
             TransactionType = TransactionType.Debit,
             IsoCurrencyCode = request.IsoCurrencyCode,
-            Description = request.Description,
+            Description = request.Description
         };
-
         return await CreateTransaction(transactionCreateRequest);
     }
 }

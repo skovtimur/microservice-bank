@@ -4,7 +4,7 @@ namespace AccountService.Domain.ValueObjects;
 
 public class DescriptionValueObject
 {
-    public string Description { get; set; }
+    public required string Description { get; init; }
 
     public static DescriptionValueObject? Create(string description)
     {

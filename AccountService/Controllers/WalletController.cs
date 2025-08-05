@@ -22,9 +22,12 @@ namespace AccountService.Controllers;
 [Route("api/wallets")]
 public class WalletController(
     IMediator mediator,
-    ILogger<WalletController> logger,
     IClaimsService claimsService) : ControllerBase
 {
+    // ReSharper disable NullableWarningSuppressionIsUsed
+    //Чтобы не блокировали Оператор ! (null-forgiving operator), а точнее я использую MbResult где Result может быть null ТОЛЬКО ПРИ isSuccess = false,
+    //я же делаю проверку поэтому данный warning излишен
+
     /// <summary>
     /// Get an Account By ID
     /// </summary>
@@ -76,7 +79,7 @@ public class WalletController(
         if (claimsService.TryGetUserId(User, out var userId) == false)
             return Unauthorized(MbResult<List<WalletDto>>.Fail("You haven't entered in the system"));
 
-        var wallets = await mediator.Send(new GetAllWallestQuery(userId));
+        var wallets = await mediator.Send(new GetAllWalletsQuery(userId));
         var result = MbResult<List<WalletDto>>.Ok(wallets);
 
         return Ok(result);
@@ -111,8 +114,8 @@ public class WalletController(
         if (result.IsSuccess == false)
             return BadRequest(MbResult<Guid>.Fail(result.ErrorMessage));
 
-        var id = await mediator.Send(result.Result);
-        return CreatedAtAction(nameof(Get), new { id = id }, id);
+        var walletId = await mediator.Send(result.Result!);
+        return CreatedAtAction(nameof(Get), new { id = walletId }, walletId);
     }
 
 
@@ -157,17 +160,14 @@ public class WalletController(
             if (validationResult.IsSuccess == false)
                 return BadRequest(MbResult<Guid>.Fail(validationResult.ErrorMessage));
 
-            await mediator.Send(validationResult.Result);
+            await mediator.Send(validationResult.Result!);
         }
         catch (NotFoundException exception)
         {
-            logger.LogTrace(exception.Message);
             return NotFound(exception.ToMbResult<Guid>());
         }
         catch (ForbiddenException exception)
         {
-            logger.LogTrace(exception.Message);
-
             return StatusCode(StatusCodes.Status403Forbidden,
                 exception.ToMbResult<Guid>());
         }
@@ -206,18 +206,14 @@ public class WalletController(
         }
         catch (NotFoundException exception)
         {
-            logger.LogTrace(exception.Message);
             return NotFound(exception.ToMbResult<Guid>());
         }
-        catch (BadRequestExсeption exception)
+        catch (BadRequestException exception)
         {
-            logger.LogTrace(exception.Message);
             return BadRequest(exception.ToMbResult<Guid>());
         }
         catch (ForbiddenException exception)
         {
-            logger.LogTrace(exception.Message);
-
             return StatusCode(StatusCodes.Status403Forbidden,
                 exception.ToMbResult<Guid>());
         }
@@ -254,17 +250,14 @@ public class WalletController(
         }
         catch (NotFoundException exception)
         {
-            logger.LogTrace(exception.Message);
             return NotFound(exception.ToMbResult<Guid>());
         }
-        catch (BadRequestExсeption exception)
+        catch (BadRequestException exception)
         {
             return BadRequest(exception.ToMbResult<Guid>());
         }
         catch (ForbiddenException exception)
         {
-            logger.LogTrace(exception.Message);
-
             return StatusCode(StatusCodes.Status403Forbidden,
                 exception.ToMbResult<Guid>());
         }

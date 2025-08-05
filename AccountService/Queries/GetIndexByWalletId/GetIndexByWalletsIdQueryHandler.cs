@@ -5,6 +5,7 @@ namespace AccountService.Queries.GetIndexByWalletId;
 
 public class GetIndexByWalletsIdQueryHandler : IRequestHandler<GetIndexByWalletsIdQuery, int>
 {
+#pragma warning disable // Асинхронный метод будет работать асинхронно как мы добавим бд 
     public async Task<int> Handle(GetIndexByWalletsIdQuery request, CancellationToken cancellationToken) =>
         WalletsSingleton.Wallets.FindIndex(x => x.Id == request.AccountId);
 }

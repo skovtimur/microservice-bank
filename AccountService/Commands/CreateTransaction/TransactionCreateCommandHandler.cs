@@ -10,7 +10,6 @@ using MediatR;
 namespace AccountService.Commands.CreateTransaction;
 
 public class TransactionCreateCommandHandler(
-    ILogger<TransactionCreateCommandHandler> logger,
     IMapper mapper,
     IMediator mediator,
     ITransactionService transactionService)
@@ -23,7 +22,7 @@ public class TransactionCreateCommandHandler(
 
         // 2) Get index of the Account
         var accountIndex =
-            await mediator.Send(new GetIndexByWalletsIdQuery(request.AccountId));
+            await mediator.Send(new GetIndexByWalletsIdQuery(request.AccountId), cancellationToken);
 
         if (accountIndex < 0)
             throw new NotFoundException($"The Account ({request.AccountId}) wasn't found");
@@ -32,7 +31,7 @@ public class TransactionCreateCommandHandler(
         var account = WalletsSingleton.Wallets[accountIndex];
 
         if (account.IsDeleted)
-            throw new BadRequestExсeption("The Account's already deleted");
+            throw new BadRequestException("The Account's already deleted");
 
         if (account.IsOwner(request.OwnerId) == false)
             throw new ForbiddenException($"You aren't an owner of this account ({request.AccountId})");

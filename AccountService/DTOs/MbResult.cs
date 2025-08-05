@@ -5,6 +5,9 @@ public readonly struct MbResult<T>
     public bool IsSuccess { get; private init; }
     public T? Result { get; private init; }
     public string? ErrorMessage { get; private init; }
+    
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    // Getter может пригодится
     public DateTime CreatedAtUtc { get; private init; }
 
 

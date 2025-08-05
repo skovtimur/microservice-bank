@@ -33,7 +33,7 @@ public class TransactionService(IMediator mediator) : ITransactionService
         var counterpartyAccount = WalletsSingleton.Wallets[counterpartyAccountIndex];
 
         if (counterpartyAccount.IsDeleted)
-            throw new BadRequestExсeption("The Counterparty Account's already deleted");
+            throw new BadRequestException("The Counterparty Account's already deleted");
 
         // 2.2 Create a second transaction too:
         var secondTransaction = new TransactionEntity((Guid)transaction.CounterpartyAccountId,
@@ -75,6 +75,8 @@ public class TransactionService(IMediator mediator) : ITransactionService
         var wallet = WalletsSingleton.Wallets[walletIndex];
 
         // Add or take money
+        // ReSharper disable once ConvertIfStatementToSwitchStatement
+        // Не вижу смысл переводить в switch если конструкция if выгледит лучше
         if (transaction.TransactionType == TransactionType.Credit)
         {
             wallet.AddMoney(transaction.Sum);

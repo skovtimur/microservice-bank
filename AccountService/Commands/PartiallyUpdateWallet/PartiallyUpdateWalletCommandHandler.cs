@@ -3,12 +3,12 @@ using AccountService.Domain;
 using AccountService.Domain.Entities;
 using AccountService.Exceptions;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AccountService.Commands.PartiallyUpdateWallet;
 
 public class PartiallyUpdateWalletCommandHandler : IRequestHandler<PartiallyUpdateWalletCommand>
 {
+#pragma warning disable // После добавления бд асинхронность будет уместна
     public async Task Handle(PartiallyUpdateWalletCommand request, CancellationToken cancellationToken)
     {
         var index = WalletsSingleton.Wallets.FindIndex(w => w.Id == request.Id);
@@ -19,13 +19,13 @@ public class PartiallyUpdateWalletCommandHandler : IRequestHandler<PartiallyUpda
         var wallet = WalletsSingleton.Wallets[index];
 
         if (wallet.IsDeleted)
-            throw new BadRequestExсeption("The Wallet's deleted");
+            throw new BadRequestException("The Wallet's deleted");
 
         if (wallet.IsOwner(request.OwnerId) == false)
             throw new ForbiddenException("You're not an owner");
 
         if (wallet.Type == WalletType.Checking)
-            throw new BadRequestExсeption(
+            throw new BadRequestException(
                 $"Only Wallet with {WalletType.Deposit} or {WalletType.Credit} type can have an {nameof(WalletEntity.InterestRate)}");
 
         wallet.InterestRate = request.NewInterestRate;

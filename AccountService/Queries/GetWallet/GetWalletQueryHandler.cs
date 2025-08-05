@@ -1,4 +1,3 @@
-using AccountService.Abstractions.ServiceInterfaces;
 using AccountService.Data;
 using AccountService.Domain.Entities;
 using AccountService.DTOs;
@@ -11,6 +10,7 @@ namespace AccountService.Queries.GetWallet;
 public class GetWalletQueryHandler(IMapper mapper)
     : IRequestHandler<GetWalletQuery, WalletDto>
 {
+#pragma warning disable // Асинхронный метод будет работать асинхронно как мы добавим бд
     public async Task<WalletDto> Handle(GetWalletQuery request, CancellationToken cancellationToken)
     {
         var foundWallet = WalletsSingleton.Wallets.FirstOrDefault(x => x.Id == request.WalletId);

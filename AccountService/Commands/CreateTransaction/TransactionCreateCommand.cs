@@ -1,4 +1,3 @@
-using AccountService.Commands.CreateWallet;
 using AccountService.Domain;
 using AccountService.Domain.ValueObjects;
 using AccountService.DTOs;
@@ -9,15 +8,18 @@ namespace AccountService.Commands.CreateTransaction;
 
 public class TransactionCreateCommand : IRequest<Guid>
 {
-    public Guid OwnerId { get; set; }
-    public Guid AccountId { get; set; }
-    public Guid? CounterpartyAccountId { get; set; }
-    public decimal Sum { get; set; }
-    public TransactionType TransactionType { get; set; }
+    public required Guid OwnerId { get; init; }
+    public required Guid AccountId { get; init; }
+    // ReSharper disable once MemberCanBePrivate.Global
+    public Guid? CounterpartyAccountId { get; init; }
+    public required decimal Sum { get; init; }
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    //Обе подсказки на TransactionType и CounterpartyAccountId думаю лишние 
+    public required TransactionType TransactionType { get; set; }
 
-    public CurrencyValueObject Currency { get; set; }
+    public required CurrencyValueObject Currency { get; init; }
 
-    public DescriptionValueObject Description { get; set; }
+    public required DescriptionValueObject Description { get; init; }
 
     public static MbResult<TransactionCreateCommand> Create(Guid ownerId, Guid accountId, decimal sum,
         TransactionType transactionType, CurrencyValueObject currency, DescriptionValueObject description,
@@ -34,7 +36,7 @@ public class TransactionCreateCommand : IRequest<Guid>
 
             CounterpartyAccountId = counterpartyAccountId == null || counterpartyAccountId == Guid.Empty
                 ? null
-                : counterpartyAccountId,
+                : counterpartyAccountId
         };
         var result = TransactionCreateCommandValidator.IsValid(newTransaction);
 

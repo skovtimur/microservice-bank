@@ -8,14 +8,14 @@ namespace AccountService.Commands.UpdateWallet;
 
 public class UpdateWalletCommand : IRequest
 {
-    //Обновы не должно быть если уже счет имеет транзакции какие нибудь
-
-    public Guid Id { get; init; }
-    public Guid OwnerId { get; init; }
-    public WalletType NewType { get; init; }
-    public CurrencyValueObject NewCurrency { get; init; }
+    // ReSharper disable MemberCanBePrivate.Global
+    // для решения 2-х подсказок ниже Resharper предлогает сделать конструктор, он мне не нужен тк есть фабричный метод Create()
+    public required Guid Id { get; init; }
+    public required Guid OwnerId { get; init; }
+    public required WalletType NewType { get; init; }
+    public required CurrencyValueObject NewCurrency { get; init; }
     public decimal? NewInterestRate { get; init; }
-    public decimal NewBalance { get; init; }
+    public required decimal NewBalance { get; init; }
     public DateTime? ClosedAtUtc { get; init; }
 
     public static MbResult<UpdateWalletCommand> Create(Guid id, Guid ownerId, WalletType newType,

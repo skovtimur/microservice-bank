@@ -5,9 +5,10 @@ using MediatR;
 
 namespace AccountService.Queries.GetAllWallets;
 
-public class GetAllWallestQueryHandler(IMapper mapper) : IRequestHandler<GetAllWallestQuery, List<WalletDto>>
+public class GetAllWalletsQueryHandler(IMapper mapper) : IRequestHandler<GetAllWalletsQuery, List<WalletDto>>
 {
-    public async Task<List<WalletDto>> Handle(GetAllWallestQuery request, CancellationToken cancellationToken)
+#pragma warning disable // Асинхронный метод будет работать асинхронно как мы добавим бд
+    public async Task<List<WalletDto>> Handle(GetAllWalletsQuery request, CancellationToken cancellationToken)
     {
         var dtos = new List<WalletDto>();
 

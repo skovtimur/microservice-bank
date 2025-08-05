@@ -10,6 +10,7 @@ namespace AccountService.Queries.GetAllTransactions;
 public class GetAllTransactionsQueryHandler(IMapper mapper)
     : IRequestHandler<GetAllTransactionsQuery, List<TransactionDto>>
 {
+#pragma warning disable // Асинхронный метод будет работать асинхронно как мы добавим бд
     public async Task<List<TransactionDto>> Handle(GetAllTransactionsQuery request, CancellationToken cancellationToken)
     {
         var indexOfWallet = WalletsSingleton.Wallets.FindIndex(x => x.Id == request.AccountId);

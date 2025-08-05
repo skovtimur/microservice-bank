@@ -7,6 +7,7 @@ namespace AccountService.Queries.GetTransaction;
 
 public class GetTransactionQueryHandler : IRequestHandler<GetTransactionQuery, TransactionEntity?>
 {
+#pragma warning disable // Асинхронный метод будет работать асинхронно как мы добавим бд
     public async Task<TransactionEntity?> Handle(GetTransactionQuery request, CancellationToken cancellationToken)
     {
         var index = TransactionsSingleton.Transactions.FindIndex(x => x.Id == request.Id);

@@ -7,7 +7,9 @@ namespace AccountService.Commands.UpdateWallet;
 
 public class UpdateWalletCommandHandler : IRequestHandler<UpdateWalletCommand>
 {
+#pragma warning disable // В будущем как добавим бд асинхронность будет уместна
     public async Task Handle(UpdateWalletCommand request, CancellationToken cancellationToken)
+#pragma warning restore
     {
         var findIndex = WalletsSingleton.Wallets.FindIndex(x => x.Id == request.Id);
 
@@ -17,7 +19,7 @@ public class UpdateWalletCommandHandler : IRequestHandler<UpdateWalletCommand>
         var oldWallet = WalletsSingleton.Wallets[findIndex];
 
         if (oldWallet.IsDeleted)
-            throw new BadRequestExсeption("The Account's already deleted");
+            throw new BadRequestException("The Account's already deleted");
 
         if (oldWallet.IsOwner(request.OwnerId) == false)
             throw new ForbiddenException("You're not an owner");

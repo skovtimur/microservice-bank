@@ -1,18 +1,29 @@
 namespace AccountService.DTOs;
 
-public class TransactionDto
+
+public class TransactionDto(
+    Guid id,
+    Guid accountId,
+    Guid? counterpartyAccountId,
+    decimal sum,
+    string currency,
+    string transactionType,
+    string description,
+    string createdAtUtc,
+    string? deletedAtUtc,
+    bool isDeleted)
 {
-    public Guid Id { get; set; }
-    
-    public Guid AccountId { get; set; }
-    public Guid? CounterpartyAccountId { get; set; }
-    
-    public decimal Sum { get; set; }
-    public string Currency { get; set; }
-    public string TransactionType { get; set; }
-    public string Description { get; set; }
-    
-    public string CreatedAtUtc { get; set; }
-    public string? DeletedAtUtc { get; set; }
-    public bool IsDeleted { get; set; }
+    public Guid Id { get; init; } = id;
+
+    public Guid AccountId { get; init; } = accountId;
+    public Guid? CounterpartyAccountId { get; init; } = counterpartyAccountId;
+
+    public decimal Sum { get; init; } = sum;
+    public string Currency { get; init; } = currency;
+    public string TransactionType { get; init; } = transactionType;
+    public string Description { get; init; } = description;
+
+    public string CreatedAtUtc { get; init; } = createdAtUtc;
+    public string? DeletedAtUtc { get; init; } = deletedAtUtc;
+    public bool IsDeleted { get; init; } = isDeleted;
 }

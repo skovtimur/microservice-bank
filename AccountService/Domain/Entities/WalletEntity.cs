@@ -4,7 +4,9 @@ namespace AccountService.Domain.Entities;
 
 public class WalletEntity : BaseEntity
 {
+#pragma warning disable CS8618, CS9264
     public WalletEntity()
+#pragma warning restore CS8618, CS9264
     {
         CreatedAtUtc = DateTime.UtcNow;
         OpenedAtUtc = DateTime.UtcNow;
@@ -54,17 +56,13 @@ public class WalletEntity : BaseEntity
 
     public void AddMoney(decimal amount)
     {
-        if (amount <= 0)
-            throw new ArgumentOutOfRangeException(nameof(amount));
-
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amount);
         Balance += amount;
     }
 
     public void TakeMoney(decimal amount)
     {
-        if (amount <= 0)
-            throw new ArgumentOutOfRangeException(nameof(amount));
-
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amount);
         Balance -= amount;
     }
 }

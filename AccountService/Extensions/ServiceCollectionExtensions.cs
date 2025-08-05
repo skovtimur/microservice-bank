@@ -10,15 +10,15 @@ public static class ServiceCollectionExtensions
     {
         services.AddSwaggerGen(options =>
         {
-            options.AddSecurityDefinition("Keycloak", new OpenApiSecurityScheme()
+            options.AddSecurityDefinition("Keycloak", new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.OAuth2,
-                Flows = new OpenApiOAuthFlows()
+                Flows = new OpenApiOAuthFlows
                 {
-                    Implicit = new OpenApiOAuthFlow()
+                    Implicit = new OpenApiOAuthFlow
                     {
                         AuthorizationUrl = authorizationUrl,
-                        Scopes = new Dictionary<string, string>()
+                        Scopes = new Dictionary<string, string>
                         {
                             { "openid", "openid" },
                             { "profile", "profile" }
@@ -26,19 +26,19 @@ public static class ServiceCollectionExtensions
                     }
                 }
             });
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
                 {
-                    new OpenApiSecurityScheme()
+                    new OpenApiSecurityScheme
                     {
-                        Reference = new OpenApiReference()
+                        Reference = new OpenApiReference
                         {
                             Id = "Keycloak",
                             Type = ReferenceType.SecurityScheme
                         },
                         In = ParameterLocation.Header,
                         Scheme = "Bearer",
-                        Name = "Bearer",
+                        Name = "Bearer"
                     },
                     []
                 }
@@ -52,7 +52,7 @@ public static class ServiceCollectionExtensions
                 {
                     Name = "Timur",
                     Url = new Uri("https://t.me/skovtimur")
-                },
+                }
             });
             var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
@@ -70,17 +70,17 @@ public static class ServiceCollectionExtensions
 
             x.MetadataAddress = metadataAddress;
 
-            x.TokenValidationParameters = new TokenValidationParameters()
+            x.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateLifetime = true,
                 ValidIssuer = validIssuer,
-                LifetimeValidator = (notBefore, expires, securityToken, validationParameters) =>
+                LifetimeValidator = (_, expires, _, _) =>
                 {
                     if (expires != null)
                         return expires.Value > DateTime.UtcNow;
 
                     return false;
-                },
+                }
             };
         });
     }

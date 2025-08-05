@@ -4,7 +4,7 @@ namespace AccountService.Domain.ValueObjects;
 
 public class CurrencyValueObject
 {
-    public string Currency { get; set; }
+    public required string Currency { get; init; }
 
     public static CurrencyValueObject? Create(string isoCurrencyCode)
     {

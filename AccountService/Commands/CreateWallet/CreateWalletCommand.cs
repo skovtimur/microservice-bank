@@ -8,11 +8,13 @@ namespace AccountService.Commands.CreateWallet;
 
 public class CreateWalletCommand : IRequest<Guid>
 {
-    public Guid OwnerId { get; init; }
-    public WalletType Type { get; init; }
-    public CurrencyValueObject Currency { get; init; }
+    // ReSharper disable MemberCanBePrivate.Global
+    // для решения 2-х подсказок ниже Resharper предлогает сделать конструктор, он мне не нужен тк есть фабричный метод Create()
+    public required Guid OwnerId { get; init; }
+    public required WalletType Type { get; init; }
+    public required CurrencyValueObject Currency { get; init; }
     public decimal? InterestRate { get; init; }
-    public decimal Balance { get; init; }
+    public required decimal Balance { get; init; }
     public DateTime? ClosedAtUtc { get; init; }
 
     public static MbResult<CreateWalletCommand> Create(Guid ownerId, WalletType type,
