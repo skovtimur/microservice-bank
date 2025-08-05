@@ -7,6 +7,7 @@ namespace AccountService.Commands.DeleteWallet;
 
 public class DeleteWalletCommandHandler : IRequestHandler<DeleteWalletCommand>
 {
+#pragma warning disable // После добавления бд асинхронность будет уместна
     public async Task Handle(DeleteWalletCommand request, CancellationToken cancellationToken)
     {
         var findIndex = WalletsSingleton.Wallets.FindIndex(x => x.Id == request.WalletId);
@@ -17,7 +18,10 @@ public class DeleteWalletCommandHandler : IRequestHandler<DeleteWalletCommand>
         var wallet = WalletsSingleton.Wallets[findIndex];
         
         if (wallet.IsDeleted)
-            throw new BadRequestExсeption("The Wallet's already deleted");
+            throw new BadRequestException("The Wallet's already deleted");
+        
+        if (wallet.IsOwner(request.OwnerId) == false)
+            throw new ForbiddenException("You're not an owner");
         
         wallet.IsDeleted = true;
         wallet.DeletedAtUtc = DateTime.UtcNow;

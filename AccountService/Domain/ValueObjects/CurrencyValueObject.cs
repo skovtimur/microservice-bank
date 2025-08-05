@@ -4,7 +4,7 @@ namespace AccountService.Domain.ValueObjects;
 
 public class CurrencyValueObject
 {
-    public string Currency { get; set; }
+    public required string Currency { get; init; }
 
     public static CurrencyValueObject? Create(string isoCurrencyCode)
     {
@@ -13,5 +13,10 @@ public class CurrencyValueObject
         return isoCurrencyCode.IsIsoCurrencyCode()
             ? new CurrencyValueObject { Currency = isoCurrencyCode }
             : null;
+    }
+
+    public override string ToString()
+    {
+        return Currency;
     }
 }

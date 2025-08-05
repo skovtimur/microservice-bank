@@ -1,22 +1,46 @@
 using System.ComponentModel.DataAnnotations;
 using AccountService.Domain;
-using AccountService.Domain.ValueObjects;
+using AccountService.Validators;
 
 namespace AccountService.Requests;
 
 public class TransactionCreateRequest
 {
-    [Required] public Guid OwnerId { get; set; }
-    [Required] public Guid AccountId { get; set; }
+    // ReSharper disable UnusedAutoPropertyAccessor.Global
+    // ReSharper disable PropertyCanBeMadeInitOnly.Global
+    
+    /// <summary>
+    /// Unique identifier of the Account. The main member in the transaction
+    /// </summary>
+    [Required]
+    public required Guid AccountId { get; set; }
+
+    /// <summary>
+    /// Unique identifier of the Counterparty Account. Other member in the transaction
+    /// </summary>
     public Guid? CounterpartyAccountId { get; set; }
-    [Required, Range(0, int.MaxValue)] public decimal Sum { get; set; }
-    [Required] public TransactionType TransactionType { get; set; }
 
+    /// <summary>
+    /// The amount that will be used in the transaction
+    /// </summary>
+    [Required, Range(0, int.MaxValue)]
+    public required  decimal Sum { get; set; }
+
+    /// <summary>
+    /// Transaction Type
+    /// </summary>
+    [Required]
+    public required  TransactionType TransactionType { get; set; }
+
+    /// <summary>
+    /// Currency Code in ISO 4217 format. For example: RUB or USD
+    /// </summary>
     [StringLength(maximumLength: 3, MinimumLength = 2)]
-    public string IsoCurrencyCode { get; set; }
+    public required string IsoCurrencyCode { get; set; }
 
-    [Required, StringLength(maximumLength: MaxDescriptionLength, MinimumLength = 3)]
-    public string Description { get; set; }
-
-    public const int MaxDescriptionLength = 5000;
+    /// <summary>
+    /// The Description of the new transaction
+    /// </summary>
+    [Required, StringLength(maximumLength: TransactionCreateCommandValidator.MaxDescriptionLength, MinimumLength = 3)]
+    public required string Description { get; set; }
 }

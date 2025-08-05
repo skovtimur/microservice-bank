@@ -3,10 +3,10 @@ using AccountService.DTOs;
 
 namespace AccountService.Exceptions;
 
-public class PaymentRequiredException(string message) : Exception(message), IExceptionToMbResultMapper
+public class BadRequestException(string text) : Exception(text), IExceptionToMbResultMapper
 {
     public MbResult<T> ToMbResult<T>()
     {
-        return MbResult<T>.Fail($"Payment Required: {Message}");
+        return MbResult<T>.Fail(Message);
     }
 }
