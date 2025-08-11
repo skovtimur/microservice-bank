@@ -9,16 +9,17 @@ public class InterestRateRequiredCheckingTypeFilter : ValidationAttribute
 {
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        decimal? interestRate = null;
-        WalletType type = WalletType.Checking;
+        decimal? interestRate;
+        WalletType type;
 
-        if (value is not WalletCreateRequest or WalletUpdateRequest)
-            return ValidationResult.Success;
-
-        if (value is WalletCreateRequest createWalletRequest)
+        switch (value)
         {
-            interestRate = createWalletRequest.InterestRate;
-            type = createWalletRequest.Type;
+            case not WalletCreateRequest or WalletUpdateRequest:
+                return ValidationResult.Success;
+            case WalletCreateRequest createWalletRequest:
+                interestRate = createWalletRequest.InterestRate;
+                type = createWalletRequest.Type;
+                break;
         }
 
         if (value is WalletUpdateRequest updateWalletRequest)

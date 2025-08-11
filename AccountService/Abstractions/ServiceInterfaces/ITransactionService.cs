@@ -4,5 +4,5 @@ namespace AccountService.Abstractions.ServiceInterfaces;
 
 public interface ITransactionService
 {
-    public Task CreateNewTransaction(TransactionEntity transaction);
+    public Task SaveNewTransaction(TransactionEntity transaction, Guid ownerId);
 }

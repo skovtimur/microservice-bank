@@ -7,6 +7,7 @@ namespace AccountService.Queries.HasWalletBeenUsed;
 
 public class HasWalletBeenUsedQueryHandler : IRequestHandler<HasWalletBeenUsedQuery, bool>
 {
+#pragma warning disable // Асинхронный метод будет работать асинхронно как мы добавим бд
     public async Task<bool> Handle(HasWalletBeenUsedQuery request, CancellationToken cancellationToken)
     {
         var index = WalletsSingleton.Wallets.FindIndex(x => x.Id == request.Id);
@@ -15,7 +16,7 @@ public class HasWalletBeenUsedQueryHandler : IRequestHandler<HasWalletBeenUsedQu
             throw new NotFoundException(typeof(WalletEntity), request.Id);
 
         var wallet = WalletsSingleton.Wallets[index];
-        int transactionCount = TransactionsSingleton.Transactions.Count(x => x.AccountId == wallet.Id);
+        var transactionCount = TransactionsSingleton.Transactions.Count(x => x.AccountId == wallet.Id);
 
         return transactionCount > 0;
     }

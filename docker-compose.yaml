@@ -1,0 +1,62 @@
+networks:
+  dev:
+    driver: bridge
+
+services:
+  # ASP.NET Core application
+  account_service:
+    container_name: account-service
+    build:
+      context: .
+      dockerfile: ./AccountService/Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - auth_service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=80
+    networks:
+      - dev
+  
+  # Keycloak auth service
+  auth_service:
+    image: quay.io/keycloak/keycloak:26.2.0
+    container_name: auth-service
+    command: start-dev
+    ports:
+      - "8080:8080"
+    networks:
+      - dev
+    depends_on:
+      - keycloak_db
+    volumes:
+      - ./realms:/opt/keycloak/data/import
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak_db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KC_LOG_LEVEL: info
+      KC_METRICS_ENABLED: true
+      KC_HEALTH_ENABLED: true
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_STRICT: 'false'
+      KC_HOSTNAME_STRICT_HTTPS: 'false'
+  
+  # Keycloak db
+  keycloak_db:
+    image: postgres:17.2
+    container_name: keycloak-db
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    networks:
+      - dev
+    
+volumes:
+  keycloak-db-data:

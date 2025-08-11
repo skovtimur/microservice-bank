@@ -3,12 +3,12 @@ using AccountService.Domain;
 using AccountService.Domain.Entities;
 using AccountService.Exceptions;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AccountService.Commands.PartiallyUpdateWallet;
 
 public class PartiallyUpdateWalletCommandHandler : IRequestHandler<PartiallyUpdateWalletCommand>
 {
+#pragma warning disable // После добавления бд асинхронность будет уместна
     public async Task Handle(PartiallyUpdateWalletCommand request, CancellationToken cancellationToken)
     {
         var index = WalletsSingleton.Wallets.FindIndex(w => w.Id == request.Id);
@@ -19,20 +19,18 @@ public class PartiallyUpdateWalletCommandHandler : IRequestHandler<PartiallyUpda
         var wallet = WalletsSingleton.Wallets[index];
 
         if (wallet.IsDeleted)
-            throw new BadRequestExсeption("The Wallet's deleted");
+            throw new BadRequestException("The Wallet's deleted");
 
-        if ((wallet.Type == WalletType.Checking && request.NewInterestRate == null)
-            || (wallet.Type != WalletType.Checking && request.NewInterestRate != null))
-        {
-            wallet.InterestRate = request.NewInterestRate;
-            wallet.ClosedAtUtc = request.ClosedAtUtc;
-            wallet.UpdatedAtUtc = DateTime.UtcNow;
-            WalletsSingleton.Wallets[index] = wallet;
+        if (wallet.IsOwner(request.OwnerId) == false)
+            throw new ForbiddenException("You're not an owner");
 
-            return;
-        }
+        if (wallet.Type == WalletType.Checking)
+            throw new BadRequestException(
+                $"Only Wallet with {WalletType.Deposit} or {WalletType.Credit} type can have an {nameof(WalletEntity.InterestRate)}");
 
-        throw new BadRequestExсeption(
-            $"Only Wallet with {WalletType.Deposit} or {WalletType.Credit} type can have an {nameof(WalletEntity.InterestRate)}");
+        wallet.InterestRate = request.NewInterestRate;
+        wallet.ClosedAtUtc = request.ClosedAtUtc;
+        wallet.UpdatedAtUtc = DateTime.UtcNow;
+        WalletsSingleton.Wallets[index] = wallet;
     }
 }
