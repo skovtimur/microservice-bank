@@ -1,3 +1,7 @@
+volumes:
+  mariadb-data:
+  postgresql-data:
+
 networks:
   dev:
     driver: bridge
@@ -13,50 +17,75 @@ services:
       - "80:80"
     depends_on:
       - auth_service
+      - postgresql_db
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=80
+      ConnectionStrings__account-service-db: "Database=account_service_db;Server=postgresql_db;Port=5432;User Id = postgres;Password=nigPostgres_Pas5432;Include Error Detail=true;Pooling=true"
+      ConnectionStrings__hangfire-db: "Database=hangfire_db;Server=postgresql_db;Port=5432;User Id = postgres;Password=nigPostgres_Pas5432;Include Error Detail=true;Pooling=true"
+      Keycloak__MetadataAddress: "http://auth_service:8080/realms/main_realm-realm/.well-known/openid-configuration"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_HTTP_PORTS: 80
     networks:
       - dev
   
-  # Keycloak auth service
+  # Postgresql Database
+  postgresql_db:
+    image: postgres:17.2
+    container_name: postgresql
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+    restart: always
+    environment:
+      POSTGRES_DB: account_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: nigPostgres_Pas5432
+    networks:
+      - dev
+  
   auth_service:
+    container_name: keycloak
     image: quay.io/keycloak/keycloak:26.2.0
-    container_name: auth-service
-    command: start-dev
+    command:
+      - start-dev
+#      - "-Dkeycloak.migration.action=import"
+#      - "-Dkeycloak.migration.strategy=OVERWRITE_EXISTING"
+#      - "-Dkeycloak.migration.provider=singleFile"
+#      - "-Dkeycloak.migration.file=/opt/keycloak/data/import/main_realm-realm.json"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_IMPORT_LOG_LEVEL: DEBUG
+      KC_DB: "mariadb"
+      KC_DB_USERNAME: "admin"
+      KC_DB_PASSWORD: "admin"
+      KC_DB_URL: jdbc:mariadb://mariadb:3306/keycloak?characterEncoding=UTF-8
     ports:
       - "8080:8080"
+#    volumes:
+#      - ./.keycloak-config:/opt/keycloak/data/import:Z
     networks:
       - dev
     depends_on:
-      - keycloak_db
-    volumes:
-      - ./realms:/opt/keycloak/data/import
+      - mariadb
+    
+    # Keycloak database
+  mariadb:
+    image: mariadb:11.4.7
+    container_name: mariadb
+    ports:
+      - "3306:3306"
     environment:
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://keycloak_db:5432/keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: password
-      KC_LOG_LEVEL: info
-      KC_METRICS_ENABLED: true
-      KC_HEALTH_ENABLED: true
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HOSTNAME_STRICT: 'false'
-      KC_HOSTNAME_STRICT_HTTPS: 'false'
-  
-  # Keycloak db
-  keycloak_db:
-    image: postgres:17.2
-    container_name: keycloak-db
-    volumes:
-      - keycloak-db-data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: keycloak
-      POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: password
+      MARIADB_USER: admin
+      MARIADB_PASSWORD: admin
+      MARIADB_DATABASE: keycloak
+      MARIADB_ROOT_PASSWORD: admin
+    healthcheck:
+      test: [ "CMD", "/usr/local/bin/healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized" ]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+#    volumes:
+#      - mariadb-data:/var/lib/mysql
     networks:
       - dev
-    
-volumes:
-  keycloak-db-data:

@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccountService", "AccountService\AccountService.csproj", "{83F7E88B-D522-4B42-AA30-8482D05E5F3E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccountService.Tests", "AccountService.Tests\AccountService.Tests.csproj", "{4D4EFC89-F912-4873-9BCE-054247B2DE2A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{83F7E88B-D522-4B42-AA30-8482D05E5F3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83F7E88B-D522-4B42-AA30-8482D05E5F3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83F7E88B-D522-4B42-AA30-8482D05E5F3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D4EFC89-F912-4873-9BCE-054247B2DE2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D4EFC89-F912-4873-9BCE-054247B2DE2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D4EFC89-F912-4873-9BCE-054247B2DE2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D4EFC89-F912-4873-9BCE-054247B2DE2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
