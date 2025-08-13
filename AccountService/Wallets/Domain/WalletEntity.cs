@@ -35,12 +35,12 @@ public class WalletEntity : BaseEntity
     }
 
     public Guid OwnerId { get; init; }
-    public WalletType Type { get; init; }
-    public CurrencyValueObject Currency { get; init; }
-    public decimal? InterestRate { get; set; }
+    public WalletType Type { get; private set; }
+    public CurrencyValueObject Currency { get; private set; }
+    public decimal? InterestRate { get; private set; }
 
     public DateTime OpenedAtUtc { get; init; }
-    public DateTime? ClosedAtUtc { get; set; }
+    public DateTime? ClosedAtUtc { get; private set; }
 
     public List<TransactionEntity> Transactions { get; init; } = [];
     public decimal Balance { get; private set; }
@@ -76,20 +76,30 @@ public class WalletEntity : BaseEntity
         return Balance - oldBalance == sum;
     }
 
-    public void AccrualInterest()
-    {
-        if (InterestRate == null)
-            throw new InvalidOperationException("Interest rate cannot be null");
-
-        var valueOfOnePercent = Balance / 100;
-        var sum = valueOfOnePercent * (decimal)InterestRate;
-
-        Balance += sum;
-    }
+    // public void AccrualInterest()
+    // {
+    //     if (InterestRate == null)
+    //         throw new InvalidOperationException("Interest rate cannot be null");
+    //
+    //     var valueOfOnePercent = Balance / 100;
+    //     var sum = valueOfOnePercent * (decimal)InterestRate;
+    //
+    //     Balance += sum;
+    // }
 
     public void UpdateInterestRate(decimal newInterestRate, DateTime newClosedAtUtc)
     {
         InterestRate = newInterestRate;
         ClosedAtUtc = newClosedAtUtc;
+    }
+
+    public void CompletelyUpdate(WalletType newType, CurrencyValueObject newCurrency, decimal newBalance,
+        DateTime? newClosedAtUtc, decimal? newInterestRate)
+    {
+        Type = newType;
+        ClosedAtUtc = newClosedAtUtc;
+        InterestRate = newInterestRate;
+        Balance = newBalance;
+        Currency = newCurrency;
     }
 }

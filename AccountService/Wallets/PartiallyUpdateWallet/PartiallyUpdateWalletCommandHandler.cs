@@ -9,7 +9,7 @@ public class PartiallyUpdateWalletCommandHandler(IWalletRepository walletReposit
 {
     public async Task Handle(PartiallyUpdateWalletCommand request, CancellationToken cancellationToken)
     {
-        var wallet = await walletRepository.Get(request.Id);
+        var wallet = await walletRepository.GetWithReload(request.Id);
 
         if (wallet == null)
             throw new NotFoundException(typeof(WalletEntity), request.Id);

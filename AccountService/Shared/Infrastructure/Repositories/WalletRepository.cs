@@ -15,6 +15,20 @@ public class WalletRepository(MainDbContext dbContext, IMapper mapper) : IWallet
         return foundWallet;
     }
 
+    public async Task<WalletEntity?> GetWithReload(Guid id)
+    {
+        var foundWallet = await dbContext.Wallets
+            .Include(x => x.Transactions)
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (foundWallet != null)
+        {
+            await dbContext.Entry(foundWallet).ReloadAsync();
+        }
+
+        return foundWallet;
+    }
+
     public async Task<List<WalletDto>> GetAllWalletByUserId(Guid userId)
     {
         var wallets = await dbContext.Wallets
@@ -37,7 +51,7 @@ public class WalletRepository(MainDbContext dbContext, IMapper mapper) : IWallet
     {
         updatedWallet.UpdateEntity();
         dbContext.Wallets.Update(updatedWallet);
-
+        
         await dbContext.SaveChangesAsync();
     }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using AccountService.Shared.BackgroundJobs;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

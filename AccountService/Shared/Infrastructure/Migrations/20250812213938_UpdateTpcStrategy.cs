@@ -29,7 +29,7 @@ namespace AccountService.Shared.Infrastructure.Migrations
                 name: "EntityVersion",
                 table: "wallets",
                 newName: "entity_version");
-
+            
             migrationBuilder.RenameColumn(
                 name: "DeletedAtUtc",
                 table: "wallets",

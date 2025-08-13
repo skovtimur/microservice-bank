@@ -14,6 +14,7 @@ using AccountService.Wallets.UpdateWallet;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AccountService.Wallets.Api;
 
@@ -21,7 +22,8 @@ namespace AccountService.Wallets.Api;
 [Route("/api/wallets")]
 public class WalletController(
     IMediator mediator,
-    IClaimsService claimsService) : ControllerBase
+    IClaimsService claimsService,
+    ILogger<WalletController> logger) : ControllerBase
 {
     // ReSharper disable NullableWarningSuppressionIsUsed
     //Чтобы не блокировали Оператор ! (null-forgiving operator), а точнее я использую MbResult где Result может быть null ТОЛЬКО ПРИ isSuccess = false,
@@ -132,6 +134,7 @@ public class WalletController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPut("update"), ValidationFilter, Authorize]
     public async Task<IActionResult> Update([Required, FromForm] WalletUpdateRequest request)
     {
@@ -167,6 +170,11 @@ public class WalletController(
         {
             return BadRequest(exception.ToMbResult<Guid>());
         }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogError(ex, "Database update failed.");
+            return Conflict(MbResult<Guid>.Fail(ex.Message));
+        }
 
         var result = MbResult<Guid>.Ok(request.Id);
         return Ok(result);
@@ -188,6 +196,7 @@ public class WalletController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     [HttpPatch("update-interest-rate"), ValidationFilter, Authorize]
     public async Task<IActionResult> PartiallyUpdate([Required, FromForm] WalletPartiallyUpdateRequest request)
     {
@@ -214,6 +223,11 @@ public class WalletController(
         {
             return StatusCode(StatusCodes.Status403Forbidden,
                 exception.ToMbResult<Guid>());
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogError(ex, "Database update failed.");
+            return Conflict(MbResult<Guid>.Fail(ex.Message));
         }
 
         var result = MbResult<Guid>.Ok(request.Id);

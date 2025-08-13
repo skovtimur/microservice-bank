@@ -14,9 +14,8 @@ public class UpdateWalletCommandHandlerTests
     public async Task Handle_Should_Update_Wallet_When_Valid()
     {
         // Arrange
-        Mock<MainDbContext> dbContextMock = new();
         var walletRepositoryMock = new Mock<IWalletRepository>();
-        var handler = new UpdateWalletCommandHandler(walletRepositoryMock.Object, dbContextMock.Object);
+        var handler = new UpdateWalletCommandHandler(walletRepositoryMock.Object);
 
         var walletId = Guid.NewGuid();
         var ownerId = Guid.NewGuid();
@@ -25,9 +24,6 @@ public class UpdateWalletCommandHandlerTests
             walletId, DateTime.UtcNow, null, null, false, ownerId,
             WalletType.Checking, new CurrencyValueObject { Currency = "USD" }, DateTime.UtcNow, null, null,
             [], 100, Guid.NewGuid());
-
-        var entryMock = EntryMocking.MockEntityEntry(dbContextMock, oldWallet);
-        dbContextMock.Setup(x => x.Entry(It.IsAny<WalletEntity>())).Returns(entryMock.Object);
 
         var command = CreateCommand(walletId, ownerId);
 
@@ -54,7 +50,7 @@ public class UpdateWalletCommandHandlerTests
     {
         // Arrange
         var walletRepositoryMock = new Mock<IWalletRepository>();
-        var handler = new UpdateWalletCommandHandler(walletRepositoryMock.Object, new Mock<MainDbContext>().Object);
+        var handler = new UpdateWalletCommandHandler(walletRepositoryMock.Object);
         var command = CreateCommand(Guid.NewGuid(), Guid.NewGuid());
 
         walletRepositoryMock.Setup(r => r.Get(command.Id))
@@ -69,7 +65,7 @@ public class UpdateWalletCommandHandlerTests
     {
         // Arrange
         var walletRepositoryMock = new Mock<IWalletRepository>();
-        var handler = new UpdateWalletCommandHandler(walletRepositoryMock.Object, new Mock<MainDbContext>().Object);
+        var handler = new UpdateWalletCommandHandler(walletRepositoryMock.Object);
         var walletId = Guid.NewGuid();
         var ownerId = Guid.NewGuid();
 
@@ -90,7 +86,7 @@ public class UpdateWalletCommandHandlerTests
     {
         // Arrange
         var walletRepositoryMock = new Mock<IWalletRepository>();
-        var handler = new UpdateWalletCommandHandler(walletRepositoryMock.Object, new Mock<MainDbContext>().Object);
+        var handler = new UpdateWalletCommandHandler(walletRepositoryMock.Object);
         var walletId = Guid.NewGuid();
         var ownerId = Guid.NewGuid();
 

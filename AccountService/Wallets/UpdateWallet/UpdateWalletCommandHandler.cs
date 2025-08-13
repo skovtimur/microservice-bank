@@ -6,36 +6,31 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccountService.Wallets.UpdateWallet;
 
-public class UpdateWalletCommandHandler(IWalletRepository walletRepository, MainDbContext dbContext)
+public class UpdateWalletCommandHandler(IWalletRepository walletRepository)
     : IRequestHandler<UpdateWalletCommand>
 {
     public async Task Handle(UpdateWalletCommand request, CancellationToken cancellationToken)
     {
-        var oldWallet = await walletRepository.Get(request.Id);
+        var wallet = await walletRepository.GetWithReload(request.Id);
 
-        if (oldWallet == null)
+        if (wallet == null)
             throw new NotFoundException(typeof(WalletEntity), request.Id);
 
-        if (oldWallet.IsDeleted)
+        if (wallet.IsDeleted)
             throw new BadRequestException("The Account's already deleted");
 
-        var hasBeenUsed = oldWallet.Transactions.Count > 0;
+        var hasBeenUsed = wallet.Transactions.Count > 0;
 
         if (hasBeenUsed)
             throw new BadRequestException("You can't update the wallet because it has already been used");
 
-        if (oldWallet.IsOwner(request.OwnerId) == false)
+        if (wallet.IsOwner(request.OwnerId) == false)
             throw new ForbiddenException("You're not an owner");
 
-        dbContext.Entry(oldWallet).State =
-            EntityState.Detached; // для того чтобы ef core не орал на то что я пытаюсь поменять на другой обьект уже существующий
-
-        var updatedWallet = new WalletEntity(id: oldWallet.Id, oldWallet.CreatedAtUtc, DateTime.UtcNow,
-            oldWallet.DeletedAtUtc, oldWallet.IsDeleted, ownerId: oldWallet.OwnerId, request.NewType,
-            request.NewCurrency,
-            oldWallet.OpenedAtUtc, oldWallet.ClosedAtUtc, request.NewInterestRate, oldWallet.Transactions,
-            request.NewBalance, entityVersion: oldWallet.EntityVersion);
-
-        await walletRepository.Update(updatedWallet);
+        wallet.CompletelyUpdate(request.NewType, request.NewCurrency, newBalance: request.NewBalance,
+            request.ClosedAtUtc,
+            newInterestRate: request.NewInterestRate);
+        
+        await walletRepository.Update(wallet);
     }
 }
