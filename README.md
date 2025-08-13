@@ -1,4 +1,22 @@
-## To Run:
+## About the service
+
+It's a service you can use to manage wallets and transactions of a bank.
+Stack:
+
+- ASP.NET Core,
+- Entity Framework Core with Postgres,
+- Hangfire,
+- Keycloak + MariaDb,
+- Swagger,
+- JWT Auth,
+- MediatR,
+- xUnit + Moq + Testcontainers,
+- FluentValidation
+- AutoMapper
+
+Architecture style: `Vertical Slice`
+
+## To Run by Docker:
 
 ```
 docker-compose up --build
@@ -6,12 +24,41 @@ docker-compose up --build
 
 ###### localhost:80 - Web API, localhost:8080 - Keycloak
 
+## To Run locally:
+
+```
+1) Press "dotnet run" or use one of Launch Settings to run this asp.net app
+2) Run Postgres in 5432 port
+3) Run Keycloak with a database for it
+```
+
+###### localhost:5000 - Web API
+
+## To Run Tests:
+
+```
+"sudo dotnet test" or just "dotnet test"
+```
+
+## To Open Hangfire Dashboard:
+
+```
+/hangfire-dashboard
+```
+
+## To Login in:
+
+1) Open Swagger
+2) Click "Authorize" button in the upper right corner
+3) Select All and Enter client ID ("microservice-bank-client")
+4) After this, Swagger redirects you to Keycloak Login Page
+
 ### To Use Keycloak, You need:
 
 1) Open localhost:8080 and login as admin (password "admin")
 2) Go to Realms Settings
 3) Point to the Action menu in the top right corner of the realm settings screen, and select Import.
-4) Choose the keycloak-main-realm.json file from this folder
+4) Choose the main_realm-realm.json file from this folder
 
 #### If the json file was invalid:
 
@@ -53,12 +100,37 @@ Root URL: http://localhost
 
 ## Documentation:
 
-### Authorization
-
-1) Open Swagger
-2) Click "Authorize" button in the upper right corner
-3) Select All and Enter client ID ("microservice-bank-client")
-4) After this, Swagger redirects you to Keycloak Login Page
+All endpoints return `MbResult<T>` value. Response examples:
+#### For a success result:
+```
+{
+  "IsSuccess": true,
+  "Result": "Result",
+  "Error": null,
+  "CreatedAtUtc": "2025-08-13T14:32:45Z"
+}
+```
+#### For a failure result :
+```
+{
+  "IsSuccess": false,
+  "Result": null,
+  "Error": {
+    "ErrorMessage": "Unable to connect to the database",
+    "Source": "AccountService.Database",
+    "HelpLink": "https://docs.example.com/errors/db-connection",
+    "StackTrace": "at AccountService.Db.Connect() in /src/Db.cs:line 45",
+    "InnerException": {
+      "ErrorMessage": "Timeout expired while connecting",
+      "Source": "System.Data.SqlClient",
+      "HelpLink": null,
+      "StackTrace": "at System.Data.SqlClient.SqlConnection.Open()",
+      "InnerException": null
+    }
+  },
+  "CreatedAtUtc": "2025-08-13T14:35:10Z"
+}
+```
 
 ### Wallet Controller
 
