@@ -27,7 +27,7 @@ public class UpdateWalletCommandHandlerTests
 
         var command = CreateCommand(walletId, ownerId);
 
-        walletRepositoryMock.Setup(r => r.Get(walletId))
+        walletRepositoryMock.Setup(r => r.GetWithReload(walletId))
             .ReturnsAsync(oldWallet);
         walletRepositoryMock.Setup(r => r.Update(It.IsAny<WalletEntity>()))
             .Returns(Task.CompletedTask);
@@ -53,7 +53,7 @@ public class UpdateWalletCommandHandlerTests
         var handler = new UpdateWalletCommandHandler(walletRepositoryMock.Object);
         var command = CreateCommand(Guid.NewGuid(), Guid.NewGuid());
 
-        walletRepositoryMock.Setup(r => r.Get(command.Id))
+        walletRepositoryMock.Setup(r => r.GetWithReload(command.Id))
             .ReturnsAsync((WalletEntity?)null);
 
         // Act & Assert
@@ -74,7 +74,7 @@ public class UpdateWalletCommandHandlerTests
             [], 1000, Guid.NewGuid());
         var command = CreateCommand(walletId, ownerId);
 
-        walletRepositoryMock.Setup(r => r.Get(wallet.Id))
+        walletRepositoryMock.Setup(r => r.GetWithReload(wallet.Id))
             .ReturnsAsync(wallet);
 
         // Act & Assert
@@ -98,7 +98,7 @@ public class UpdateWalletCommandHandlerTests
 
         var command = CreateCommand(walletId, ownerId);
 
-        walletRepositoryMock.Setup(r => r.Get(wallet.Id))
+        walletRepositoryMock.Setup(r => r.GetWithReload(wallet.Id))
             .ReturnsAsync(wallet);
 
         // Act & Assert
