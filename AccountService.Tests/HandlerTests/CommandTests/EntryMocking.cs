@@ -8,6 +8,8 @@ using Moq;
 
 namespace AccountService.Tests.HandlerTests.CommandTests;
 
+// ReSharper disable once UnusedType.Global
+// ReSharper disable once UnusedMember.Global
 public static class EntryMocking
 {
     public static Mock<EntityEntry<TEntity>> MockEntityEntry<TContext, TEntity>(Mock<TContext> dbContextMock,

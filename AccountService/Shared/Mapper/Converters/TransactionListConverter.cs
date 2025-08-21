@@ -1,4 +1,4 @@
-using AccountService.Transactions.Domain;
+using AccountService.Features.Transactions.Domain;
 using AutoMapper;
 
 namespace AccountService.Shared.Mapper.Converters;

@@ -30,11 +30,11 @@ namespace AccountService.Shared.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("created_at_utc");
 
                     b.Property<DateTime?>("DeletedAtUtc")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("deleted_at_utc");
 
                     b.Property<Guid>("EntityVersion")
@@ -49,7 +49,7 @@ namespace AccountService.Shared.Infrastructure.Migrations
                         .HasColumnName("is_deleted");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("updated_at_utc");
 
                     b.HasKey("Id");
@@ -59,7 +59,7 @@ namespace AccountService.Shared.Infrastructure.Migrations
                     b.UseTpcMappingStrategy();
                 });
 
-            modelBuilder.Entity("AccountService.Transactions.Domain.TransactionEntity", b =>
+            modelBuilder.Entity("AccountService.Features.Transactions.Domain.TransactionEntity", b =>
                 {
                     b.HasBaseType("AccountService.Shared.Domain.BaseEntity");
 
@@ -106,7 +106,7 @@ namespace AccountService.Shared.Infrastructure.Migrations
                     b.ToTable("transactions", (string)null);
                 });
 
-            modelBuilder.Entity("AccountService.Wallets.Domain.WalletEntity", b =>
+            modelBuilder.Entity("AccountService.Features.Wallets.Domain.WalletEntity", b =>
                 {
                     b.HasBaseType("AccountService.Shared.Domain.BaseEntity");
 
@@ -115,7 +115,7 @@ namespace AccountService.Shared.Infrastructure.Migrations
                         .HasColumnName("balance");
 
                     b.Property<DateTime?>("ClosedAtUtc")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("closed_at_utc");
 
                     b.Property<string>("Currency")
@@ -130,12 +130,16 @@ namespace AccountService.Shared.Infrastructure.Migrations
                         .HasColumnName("interest_rate");
 
                     b.Property<DateTime>("OpenedAtUtc")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("opened_at_utc");
 
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uuid")
                         .HasColumnName("owner_id");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
 
                     b.Property<int>("Type")
                         .HasColumnType("integer")
@@ -147,9 +151,9 @@ namespace AccountService.Shared.Infrastructure.Migrations
                     b.ToTable("wallets", (string)null);
                 });
 
-            modelBuilder.Entity("AccountService.Transactions.Domain.TransactionEntity", b =>
+            modelBuilder.Entity("AccountService.Features.Transactions.Domain.TransactionEntity", b =>
                 {
-                    b.HasOne("AccountService.Wallets.Domain.WalletEntity", null)
+                    b.HasOne("AccountService.Features.Wallets.Domain.WalletEntity", null)
                         .WithMany("Transactions")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -157,7 +161,7 @@ namespace AccountService.Shared.Infrastructure.Migrations
                         .HasConstraintName("ForeignKey_AccountId");
                 });
 
-            modelBuilder.Entity("AccountService.Wallets.Domain.WalletEntity", b =>
+            modelBuilder.Entity("AccountService.Features.Wallets.Domain.WalletEntity", b =>
                 {
                     b.Navigation("Transactions");
                 });

@@ -1,5 +1,5 @@
+using AccountService.Features.Transactions.Domain;
 using AccountService.Shared.Domain;
-using AccountService.Transactions.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

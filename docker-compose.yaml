@@ -1,5 +1,6 @@
 volumes:
   mariadb-data:
+  rabbitmq-data:
   postgresql-data:
 
 networks:
@@ -16,17 +17,40 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - auth_service
-      - postgresql_db
+      auth_service:
+        condition: service_healthy
+      rabbit_mq:
+        condition: service_healthy
+      postgresql_db:
+        condition: service_started
     environment:
-      ConnectionStrings__account-service-db: "Database=account_service_db;Server=postgresql_db;Port=5432;User Id = postgres;Password=nigPostgres_Pas5432;Include Error Detail=true;Pooling=true"
-      ConnectionStrings__hangfire-db: "Database=hangfire_db;Server=postgresql_db;Port=5432;User Id = postgres;Password=nigPostgres_Pas5432;Include Error Detail=true;Pooling=true"
-      Keycloak__MetadataAddress: "http://auth_service:8080/realms/main_realm-realm/.well-known/openid-configuration"
       ASPNETCORE_ENVIRONMENT: "Development"
       ASPNETCORE_HTTP_PORTS: 80
     networks:
       - dev
   
+  # Rabbit Mq
+  rabbit_mq:
+    image: rabbitmq:3-management
+    container_name: rabbit-mq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: always
+    hostname: rabbit_mq
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: user
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq/mnesia
+    networks:
+      - dev
+
   # Postgresql Database
   postgresql_db:
     image: postgres:17.2
@@ -40,6 +64,11 @@ services:
       POSTGRES_DB: account_service_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: nigPostgres_Pas5432
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     networks:
       - dev
   
@@ -48,10 +77,10 @@ services:
     image: quay.io/keycloak/keycloak:26.2.0
     command:
       - start-dev
-#      - "-Dkeycloak.migration.action=import"
-#      - "-Dkeycloak.migration.strategy=OVERWRITE_EXISTING"
-#      - "-Dkeycloak.migration.provider=singleFile"
-#      - "-Dkeycloak.migration.file=/opt/keycloak/data/import/main_realm-realm.json"
+      - "-Dkeycloak.migration.action=import"
+      - "-Dkeycloak.migration.strategy=IGNORE_EXISTING"
+      - "-Dkeycloak.migration.provider=singleFile"
+      - "-Dkeycloak.migration.file=/opt/keycloak/data/import/main_realm-realm.json"
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -62,12 +91,18 @@ services:
       KC_DB_URL: jdbc:mariadb://mariadb:3306/keycloak?characterEncoding=UTF-8
     ports:
       - "8080:8080"
-#    volumes:
-#      - ./.keycloak-config:/opt/keycloak/data/import:Z
+    volumes:
+      - ./.keycloak-config:/opt/keycloak/data/import:Z
     networks:
       - dev
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e 'GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n' >&3;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     
     # Keycloak database
   mariadb:
@@ -85,7 +120,7 @@ services:
       interval: 3s
       timeout: 3s
       retries: 20
-#    volumes:
-#      - mariadb-data:/var/lib/mysql
+    volumes:
+      - mariadb-data:/var/lib/mysql
     networks:
       - dev

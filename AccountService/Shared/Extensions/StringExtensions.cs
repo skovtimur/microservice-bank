@@ -20,7 +20,7 @@ public static class StringExtensions
         return CurrencyCodes.Any(x => x == str);
     }
 
-    public static string GetRequiredString(string? str)
+    public static string GetRequiredString(this string? str)
     {
         if (string.IsNullOrEmpty(str))
             throw new ArgumentNullException(nameof(str));
