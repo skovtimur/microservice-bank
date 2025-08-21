@@ -1,4 +1,5 @@
 using AccountService.Shared.Infrastructure;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
@@ -70,6 +71,14 @@ public class IntegrationTestWebAppFactory
             {
                 opt.UseNpgsql(_postgresContainer.GetConnectionString());
                 opt.UseLoggerFactory(MainDbContext.GetLoggerFactory);
+            });
+
+            x.AddMassTransit(c =>
+            {
+                c.UsingInMemory((context, cfg) =>
+                {
+                    cfg.ConfigureEndpoints(context);
+                });
             });
         });
     }

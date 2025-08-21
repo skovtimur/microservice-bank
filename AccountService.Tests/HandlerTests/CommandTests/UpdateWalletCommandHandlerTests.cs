@@ -1,9 +1,8 @@
+using AccountService.Features.Transactions.Domain;
+using AccountService.Features.Wallets.Domain;
+using AccountService.Features.Wallets.UpdateWallet;
 using AccountService.Shared.Domain;
 using AccountService.Shared.Exceptions;
-using AccountService.Shared.Infrastructure;
-using AccountService.Transactions.Domain;
-using AccountService.Wallets.Domain;
-using AccountService.Wallets.UpdateWallet;
 using Moq;
 
 namespace AccountService.Tests.HandlerTests.CommandTests;

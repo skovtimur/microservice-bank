@@ -1,8 +1,8 @@
+using AccountService.Features.Transactions.CreateTransaction;
+using AccountService.Features.Transactions.Domain;
+using AccountService.Features.Wallets.CreateWallet;
+using AccountService.Features.Wallets.Domain;
 using AccountService.Shared.Mapper.Converters;
-using AccountService.Transactions.CreateTransaction;
-using AccountService.Transactions.Domain;
-using AccountService.Wallets.CreateWallet;
-using AccountService.Wallets.Domain;
 using AutoMapper;
 
 namespace AccountService.Shared.Mapper;

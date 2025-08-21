@@ -1,23 +1,15 @@
 using System.Text.Json.Serialization;
-using AccountService.Shared.Abstractions.BackgroundJobInterfaces;
-using AccountService.Shared.Abstractions.ServiceInterfaces;
+using AccountService.Features.Wallets.CreateWallet;
 using AccountService.Shared.Api.Filters;
-using AccountService.Shared.BackgroundJobs;
 using AccountService.Shared.Extensions;
 using AccountService.Shared.Infrastructure;
-using AccountService.Shared.Infrastructure.Repositories;
 using AccountService.Shared.Mapper;
-using AccountService.Shared.Services;
-using AccountService.Shared.Validators;
-using AccountService.Transactions.Domain;
-using AccountService.Wallets.CreateWallet;
-using AccountService.Wallets.Domain;
+using AccountService.Shared.Options;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
-using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,14 +26,12 @@ public class Program
         builder.Services.AddOpenApi();
         builder.Services.AddDbContext<MainDbContext>(opt =>
         {
-            var connectionString = builder.Configuration.GetConnectionString("account-service-db");
-
-            if (string.IsNullOrEmpty(connectionString))
-                throw new NullReferenceException("Connection string is null");
+            var connectionString = builder.Configuration.GetConnectionString("account-service-db").GetRequiredString();
 
             opt.UseNpgsql(connectionString);
             opt.UseLoggerFactory(MainDbContext.GetLoggerFactory);
         });
+        builder.Services.AddMyOptions(builder.Configuration);
         builder.Services.AddSwagger(new Uri(builder.Configuration["Keycloak:AuthorizationUrl"] ??
                                             throw new NullReferenceException("Keycloak:AuthorizationUrl is empty")));
         builder.Services.AddRouting();
@@ -51,20 +41,21 @@ public class Program
                     .AllowAnyMethod()
                     .AllowAnyHeader()));
 
-        builder.Services.AddScoped<IInterestAccrualDailyBackgroundJob, InterestAccrualDailyBackgroundJob>();
-        builder.Services.AddScoped<IClaimsService, ClaimsService>();
-        builder.Services.AddScoped<IWalletRepository, WalletRepository>();
-        builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
-        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
-
         builder.Services.AddKeycloakAuthentication(MainAuthScheme,
-            StringExtensions.GetRequiredString(builder.Configuration["Keycloak:Audience"]),
-            StringExtensions.GetRequiredString(builder.Configuration["Keycloak:MetadataAddress"]),
-            StringExtensions.GetRequiredString(builder.Configuration["Keycloak:ValidIssuer"]));
+            builder.Configuration["Keycloak:Audience"].GetRequiredString(),
+            builder.Configuration["Keycloak:MetadataAddress"].GetRequiredString(),
+            builder.Configuration["Keycloak:ValidIssuer"].GetRequiredString());
         builder.Services.AddAuthorization();
 
         if (builder.Environment.IsTestEnvironment() == false)
         {
+            var rabbitMqOptions = builder.Configuration.GetRequiredSection("RabbitMq").Get<RabbitMqOptions>(options =>
+                                  {
+                                      options.ErrorOnUnknownConfiguration = true;
+                                  }) ??
+                                  throw new NullReferenceException("RabbitMq configuration is null");
+            builder.Services.AddMasstransitMessaging(rabbitMqOptions);
+
             builder.Services.AddHangfire(configuration =>
             {
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -88,11 +79,14 @@ public class Program
         {
             cfg.RegisterServicesFromAssembly(typeof(CreateWalletCommandHandler).Assembly);
         });
+        builder.Services.AddMyServices();
+
         var app = builder.Build();
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
         if (app.Environment.IsTestEnvironment() == false)
         {
-            app.LaunchRecurrentJobs();
+            app.UseRecurrentJobs();
         }
 
         if (app.Environment.IsDevelopment())

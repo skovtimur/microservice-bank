@@ -1,9 +1,9 @@
+using AccountService.Features.Transactions.CreateTransaction;
+using AccountService.Features.Transactions.Domain;
+using AccountService.Features.Wallets.CreateWallet;
+using AccountService.Features.Wallets.Domain;
 using AccountService.Shared.Domain;
 using AccountService.Shared.Mapper;
-using AccountService.Transactions.CreateTransaction;
-using AccountService.Transactions.Domain;
-using AccountService.Wallets.CreateWallet;
-using AccountService.Wallets.Domain;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 
@@ -115,6 +115,7 @@ public class MainMapperTests
         Assert.Equal(walletEntity.Type.ToString(), dto.Type);
         Assert.Equal(walletEntity.Currency.Currency, dto.Currency);
         Assert.Equal(walletEntity.Transactions.Count, dto.Transactions.Count);
+        Assert.Equal(walletEntity.Status.ToString(), dto.Status);
         Assert.NotNull(dto.CreatedAtUtc);
         Assert.NotNull(dto.OpenedAtUtc);
 

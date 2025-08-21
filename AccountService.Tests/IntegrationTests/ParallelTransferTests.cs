@@ -1,10 +1,8 @@
 using System.Net;
+using AccountService.Features.Transactions.Api.Requests;
+using AccountService.Features.Wallets.Domain;
 using AccountService.Shared.Domain;
 using AccountService.Shared.Infrastructure;
-using AccountService.Transactions.Api.Requests;
-using AccountService.Wallets.CreateWallet;
-using AccountService.Wallets.Domain;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,13 +18,11 @@ public class ParallelTransferTests : IClassFixture<IntegrationTestWebAppFactory>
         _httpClient = factory.CreateClient();
 
         _dbContext = scope.ServiceProvider.GetRequiredService<MainDbContext>();
-        _mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
     }
 
     private readonly MainDbContext _dbContext;
     private readonly Random _random = new();
     private readonly HttpClient _httpClient;
-    private readonly IMediator _mediator;
 
     [Theory]
     [InlineData(50)]
@@ -40,24 +36,18 @@ public class ParallelTransferTests : IClassFixture<IntegrationTestWebAppFactory>
         const decimal counterpartyBalance = 900;
         const decimal commonBalance = accountBalance + counterpartyBalance;
 
-        var accountId = await _mediator.Send(new CreateWalletCommand
-        {
-            OwnerId = AuthTestHandler.UserId,
-            Type = WalletType.Checking,
-            Currency = new CurrencyValueObject { Currency = "USD" },
-            InterestRate = null,
-            Balance = accountBalance,
-            ClosedAtUtc = null
-        });
-        var counterpartyId = await _mediator.Send(new CreateWalletCommand
-        {
-            OwnerId = AuthTestHandler.UserId,
-            Type = WalletType.Deposit,
-            Currency = new CurrencyValueObject { Currency = "USD" },
-            InterestRate = 2,
-            Balance = counterpartyBalance,
-            ClosedAtUtc = null
-        });
+        var accountId = Guid.NewGuid();
+        await _dbContext.Wallets.AddAsync(new WalletEntity(accountId, DateTime.UtcNow, null, null, false,
+            AuthTestHandler.UserId, WalletType.Checking, new CurrencyValueObject { Currency = "USD" }, DateTime.UtcNow,
+            null,
+            null, [], accountBalance, Guid.NewGuid()));
+
+        var counterpartyId = Guid.NewGuid();
+        await _dbContext.Wallets.AddAsync(new WalletEntity(counterpartyId, DateTime.UtcNow, null, null, false,
+            Guid.NewGuid(), WalletType.Deposit, new CurrencyValueObject { Currency = "USD" }, DateTime.UtcNow, null,
+            2, [], counterpartyBalance, Guid.NewGuid()));
+
+        await _dbContext.SaveChangesAsync();
 
         // Act
         var sum = _random.Next(0, 1000);
@@ -90,11 +80,12 @@ public class ParallelTransferTests : IClassFixture<IntegrationTestWebAppFactory>
 
         // Assert
         Assert.Equal(numberOfTransfer, results.Length);
-        
+
         foreach (var result in results)
         {
             Assert.True(result.StatusCode is HttpStatusCode.Conflict or HttpStatusCode.Created);
         }
+
         var accountFromDb = await _dbContext.Wallets
             .SingleOrDefaultAsync(x => x.Id == accountId);
 

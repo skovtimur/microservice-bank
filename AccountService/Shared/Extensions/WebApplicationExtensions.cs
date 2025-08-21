@@ -9,16 +9,16 @@ public static class WebApplicationExtensions
     public static void ApplyMigrations(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
-        
+
         var dbContext = scope.ServiceProvider.GetRequiredService<MainDbContext>();
         dbContext.Database.Migrate();
     }
-    
-    public static void LaunchRecurrentJobs(this WebApplication app)
+
+    public static void UseRecurrentJobs(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
-        
         var interestAccrualJob = scope.ServiceProvider.GetRequiredService<IInterestAccrualDailyBackgroundJob>();
-        interestAccrualJob.Run();
+        
+        Task.WaitAll(interestAccrualJob.Run());
     }
 }

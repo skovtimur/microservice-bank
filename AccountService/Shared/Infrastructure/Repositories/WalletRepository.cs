@@ -1,4 +1,4 @@
-using AccountService.Wallets.Domain;
+using AccountService.Features.Wallets.Domain;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,13 +17,12 @@ public class WalletRepository(MainDbContext dbContext, IMapper mapper) : IWallet
 
     public async Task<WalletEntity?> GetWithReload(Guid id)
     {
-        var foundWallet = await dbContext.Wallets
-            .Include(x => x.Transactions)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        var foundWallet = await Get(id);
 
         if (foundWallet != null)
         {
             await dbContext.Entry(foundWallet).ReloadAsync();
+            foundWallet = await Get(id);
         }
 
         return foundWallet;
@@ -51,13 +50,37 @@ public class WalletRepository(MainDbContext dbContext, IMapper mapper) : IWallet
     {
         updatedWallet.UpdateEntity();
         dbContext.Wallets.Update(updatedWallet);
-        
+
         await dbContext.SaveChangesAsync();
     }
 
     public async Task Delete(WalletEntity deletedWallet)
     {
         deletedWallet.DeleteEntitySoftly();
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task FreezeByOwnerId(Guid ownerId)
+    {
+        var wallets = await dbContext.Wallets
+            .Where(x => x.OwnerId == ownerId)
+            .ToListAsync();
+
+        foreach (var w in wallets)
+            w.Freeze();
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task UnFreezeByOwnerId(Guid ownerId)
+    {
+        var wallets = await dbContext.Wallets
+            .Where(x => x.OwnerId == ownerId)
+            .ToListAsync();
+
+        foreach (var w in wallets)
+            w.Unfreeze();
+
         await dbContext.SaveChangesAsync();
     }
 }

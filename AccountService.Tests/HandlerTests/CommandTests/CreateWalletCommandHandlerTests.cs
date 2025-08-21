@@ -1,7 +1,9 @@
+using AccountService.Features.Wallets.CreateWallet;
+using AccountService.Features.Wallets.Domain;
 using AccountService.Shared.Domain;
-using AccountService.Wallets.CreateWallet;
-using AccountService.Wallets.Domain;
+using AccountService.Shared.RabbitMq.RabbitMqEvents;
 using AutoMapper;
+using MassTransit;
 using Moq;
 
 namespace AccountService.Tests.HandlerTests.CommandTests;
@@ -40,13 +42,17 @@ public class CreateWalletCommandHandlerTests
             .Setup(m => m.Map<WalletEntity>(request))
             .Returns(responseWalletEntity);
 
+        var publisherMock = new Mock<IPublishEndpoint>();
+        publisherMock.Setup(x => x.Publish(It.IsAny<AccountOpenedEventModel>(), CancellationToken.None));
+
         var walletRepositoryMock = new Mock<IWalletRepository>();
 
         walletRepositoryMock
             .Setup(r => r.Create(responseWalletEntity))
             .Returns(Task.CompletedTask);
 
-        var handler = new CreateWalletCommandHandler(mapperMock.Object, walletRepositoryMock.Object);
+        var handler =
+            new CreateWalletCommandHandler(mapperMock.Object, walletRepositoryMock.Object, publisherMock.Object);
 
         // Act
         var result = await handler.Handle(request, CancellationToken.None);

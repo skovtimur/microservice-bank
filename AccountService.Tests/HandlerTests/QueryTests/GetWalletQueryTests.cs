@@ -1,7 +1,7 @@
+using AccountService.Features.Wallets.Domain;
+using AccountService.Features.Wallets.GetWallet;
 using AccountService.Shared.Domain;
 using AccountService.Shared.Exceptions;
-using AccountService.Wallets.Domain;
-using AccountService.Wallets.GetWallet;
 using AutoMapper;
 using Moq;
 

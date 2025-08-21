@@ -1,5 +1,5 @@
+using AccountService.Features.Wallets.Domain;
 using AccountService.Shared.Domain;
-using AccountService.Wallets.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,8 +17,10 @@ public class WalletEntityConfiguration : IEntityTypeConfiguration<WalletEntity>
         builder.Property(x => x.Balance).IsRequired().HasColumnName("balance");
         builder.Property(x => x.InterestRate).HasMaxLength(100).HasColumnName("interest_rate");
 
-        builder.Property(x => x.OpenedAtUtc).IsRequired().HasColumnName("opened_at_utc");
-        builder.Property(x => x.ClosedAtUtc).HasColumnName("closed_at_utc");
+        builder.Property(x => x.OpenedAtUtc).HasConversion(BaseEntityConfiguration.DateTimeConverter).IsRequired()
+            .HasColumnName("opened_at_utc");
+        builder.Property(x => x.ClosedAtUtc).HasConversion(BaseEntityConfiguration.DateTimeConverter)
+            .HasColumnName("closed_at_utc");
 
         builder.HasMany(x => x.Transactions).WithOne()
             .HasForeignKey(x => x.AccountId)
@@ -29,5 +31,8 @@ public class WalletEntityConfiguration : IEntityTypeConfiguration<WalletEntity>
             .HasColumnName("currency").IsRequired();
 
         builder.HasIndex(p => p.OwnerId).HasDatabaseName("IX_wallets_owner_id");
+
+        builder.Property(p => p.Status).HasColumnName("status")
+            .IsRequired();
     }
 }

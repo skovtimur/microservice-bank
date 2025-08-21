@@ -1,16 +1,22 @@
+using AccountService.Features.Wallets.Domain;
 using AccountService.Shared.Abstractions.BackgroundJobInterfaces;
 using AccountService.Shared.Infrastructure;
-using AccountService.Wallets.Domain;
+using AccountService.Shared.RabbitMq.RabbitMqEvents;
 using Hangfire;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace AccountService.Shared.BackgroundJobs;
 
-public class InterestAccrualDailyBackgroundJob(MainDbContext dbContext, IRecurringJobManager manager)
+public class InterestAccrualDailyBackgroundJob(
+    MainDbContext dbContext,
+    IRecurringJobManager manager,
+    IPublishEndpoint publishEndpoint)
     : IInterestAccrualDailyBackgroundJob
 {
     private const string AccrueInterestProcedureName = "accrue_interest";
 
+    // ReSharper disable once UseRawString
     public const string CreateOrReplaceAccrueInterestProcedureCommand = $@"CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE OR REPLACE PROCEDURE {AccrueInterestProcedureName}(p_wallet_id UUID)
 LANGUAGE plpgsql
@@ -86,31 +92,37 @@ BEGIN
 END;
 $$; ";
 
-    public void Run()
+    public Task Run()
     {
         manager.AddOrUpdate(
             "accrual_interest_to_deposit_wallets",
             () => AccrualAllDepositWallets(),
             Cron.Daily
         );
+
+        return Task.CompletedTask;
     }
 
     // ReSharper disable once MemberCanBePrivate.Global
     // public метод нужен для коректной работы Hangfire
     public void AccrualAllDepositWallets()
     {
-        // по заданию нужно сделать именно accrue_interest (Guid: accountId)
-        // хотя желательно сделать еще было бы accrue_interest_all ()
         using var tx = dbContext.Database.BeginTransaction();
-        var walletIdentities = dbContext.Wallets
+        var wallets = dbContext.Wallets
             .Where(w => w.IsDeleted == false
-                        && w.InterestRate != null 
+                        && w.InterestRate != null
                         && w.Type == WalletType.Deposit)
-            .Select(x => x.Id)
             .ToList();
 
-        foreach (var accountId in walletIdentities)
-            dbContext.Database.ExecuteSqlRaw($"CALL {AccrueInterestProcedureName}({{0}})", accountId);
+        foreach (var w in wallets)
+        {
+            dbContext.Database.ExecuteSqlRaw($"CALL {AccrueInterestProcedureName}({{0}})", w.Id);
+
+            var task = publishEndpoint.Publish(new InterestAccruedEventModel(Guid.NewGuid(), w.Id, w.Balance, DateTime.UtcNow,
+                DateTime.UtcNow, DateTime.UtcNow.AddDays(1)));
+            
+            Task.WaitAll(task);
+        }
 
         tx.Commit();
     }

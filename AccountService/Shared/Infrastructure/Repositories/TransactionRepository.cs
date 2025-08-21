@@ -1,8 +1,10 @@
 using System.Data;
+using AccountService.Features.Transactions.Domain;
+using AccountService.Features.Wallets.Domain;
 using AccountService.Shared.Exceptions;
-using AccountService.Transactions.Domain;
-using AccountService.Wallets.Domain;
+using AccountService.Shared.RabbitMq.RabbitMqEvents;
 using AutoMapper;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -11,7 +13,8 @@ namespace AccountService.Shared.Infrastructure.Repositories;
 public class TransactionRepository(
     MainDbContext dbContext,
     IMapper mapper,
-    ILogger<TransactionRepository> logger) : ITransactionRepository
+    ILogger<TransactionRepository> logger,
+    IPublishEndpoint publishEndpoint) : ITransactionRepository
 {
     public async Task<TransactionEntity?> Get(Guid id)
     {
@@ -37,6 +40,7 @@ public class TransactionRepository(
     public async Task SaveNewTransaction(TransactionEntity transaction, WalletEntity account)
     {
         var oldBalance = account.Balance;
+
         try
         {
             await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -52,6 +56,7 @@ public class TransactionRepository(
             if (accountFromDb.IsBalanceChangeValid(oldBalance, transaction.Sum, transaction.TransactionType) == false)
                 throw new DbUpdateException("The Balance wasn't updated");
 
+            await PublishEvent(transaction);
             await dbContext.Database.CommitTransactionAsync();
         }
         catch (InvalidOperationException e)
@@ -126,6 +131,8 @@ public class TransactionRepository(
                     secondTransaction.TransactionType))
             {
                 await dbContext.Database.CommitTransactionAsync();
+                await PublishEvent(transaction);
+
                 return;
             }
 
@@ -150,6 +157,17 @@ public class TransactionRepository(
 
             throw;
         }
+    }
+
+    private async Task PublishEvent(TransactionEntity transaction)
+    {
+        await publishEndpoint.Publish(transaction.TransactionType == TransactionType.Credit
+            ? new MoneyCreditedEventModel(Guid.NewGuid(), transaction.AccountId,
+                transaction.Id, transaction.Sum,
+                transaction.Currency, transaction.CreatedAtUtc)
+            : new MoneyDebitedEventModel(Guid.NewGuid(), transaction.AccountId,
+                transaction.Id, transaction.Sum,
+                transaction.Currency, transaction.CreatedAtUtc, transaction.Description.Description));
     }
 
     private void ChangeBalanceAndSaveInWallet(TransactionEntity transaction,

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using AccountService.Wallets.Api.Requests;
-using AccountService.Wallets.Domain;
+using AccountService.Features.Wallets.Api.Requests;
+using AccountService.Features.Wallets.Domain;
 
 namespace AccountService.Shared.Api.Filters;
 

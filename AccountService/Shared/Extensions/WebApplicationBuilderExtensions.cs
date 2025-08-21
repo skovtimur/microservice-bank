@@ -4,7 +4,8 @@ namespace AccountService.Shared.Extensions;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static void AddHangfireDb(this WebApplicationBuilder builder)
+    // ReSharper disable UnusedMethodReturnValue.Global
+    public static WebApplicationBuilder AddHangfireDb(this WebApplicationBuilder builder)
     {
         var connString = builder.Configuration.GetConnectionString("hangfire-db");
 
@@ -19,7 +20,8 @@ public static class WebApplicationBuilderExtensions
         using var connection = new NpgsqlConnection(connectionStringBuilder.ToString());
         connection.Open();
 
-        using var checkCommand = new NpgsqlCommand($"SELECT 1 FROM pg_database WHERE datname='{databaseName}'", connection);
+        using var checkCommand =
+            new NpgsqlCommand($"SELECT 1 FROM pg_database WHERE datname='{databaseName}'", connection);
         var exists = (int?)checkCommand.ExecuteScalar() == 1;
 
         // ReSharper disable once InvertIf
@@ -29,5 +31,7 @@ public static class WebApplicationBuilderExtensions
             using var command = new NpgsqlCommand($"CREATE DATABASE {databaseName};", connection);
             command.ExecuteNonQuery();
         }
+
+        return builder;
     }
 }
